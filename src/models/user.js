@@ -73,9 +73,23 @@ userSchema.statics.findByCredentials = async (email, password) => {
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, 'thisiskey');
+  // use only id to generate token; 
+  // if all user info is stored, then when we update username, token also contains the previous username
   user.tokens = user.tokens.concat({ token });
   await user.save();
   return token;
+}
+
+userSchema.methods.toJSON = function () { 
+  // to remove password hash or tokens from response 
+  // alternative is to deselect in query
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
 }
 
 userSchema.pre('save', async function (next) {
