@@ -11,11 +11,16 @@ const Task = mongoose.model('Task', {
       if (isEmpty(value)) { // validator package
         throw new Error('Description should not be empty.');
       }
-    }
+    },
   },
   completed: {
     type: Boolean,
     default: false,
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref:'User'
   }
 })
 
