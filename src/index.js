@@ -40,6 +40,8 @@ const upload = multer({
 
 app.post('/upload', upload.single('image'), (req, res) => {
   res.send();
+}, (err, req, res, next) => {
+  res.status(400).send({ error: err.message });
 });
 
 const demoRelation = async () => {
