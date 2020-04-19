@@ -91,7 +91,6 @@ router.delete('/users/me', auth, async (req, res) => {
 });
 
 const upload = multer({
-  dest: 'avatars',
   limits: {
     fileSize: 1000000,
   },
@@ -103,7 +102,9 @@ const upload = multer({
   }
 })
 
-router.post('/users/me/avatar', upload.single('avatar'), (req, res) => {
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+  req.user.avatar = req.file.buffer;
+  await req.user.save();
   res.send();
 }, (err, req, res, next) => { // error handling for a specific route
   res.status(400).send({ error: err.message });
@@ -113,5 +114,26 @@ router.post('/users/me/avatar', upload.single('avatar'), (req, res) => {
    mostly in production
    we can also add error handling for specific routes starting with something
 */
+
+router.delete('/users/me/avatar', auth, async (req, res) => {
+  req.user.avatar = undefined;
+  await req.user.save();
+  res.send();
+});
+
+router.get('/users/:id/avatar', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user || !user.avatar) {
+      throw new Error();
+    }
+
+    res.set('Content-type', 'image/jpg');
+    res.send(user.avatar);
+  }
+  catch (e) {
+    res.status(404).send();
+  }
+});
 
 module.exports = router;

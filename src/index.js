@@ -24,26 +24,6 @@ app.listen(port, () => {
   console.log('Server is running on port ' + port);
 });
 
-
-const upload = multer({
-  dest: 'images',
-  limits: {
-    fileSize: 1000000,
-  },
-  fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(doc|docx)$/)) {
-      return cb(new Error('Please upload a word document'))
-    }
-    cb(undefined, true);
-  }
-})
-
-app.post('/upload', upload.single('image'), (req, res) => {
-  res.send();
-}, (err, req, res, next) => {
-  res.status(400).send({ error: err.message });
-});
-
 const demoRelation = async () => {
   // const task = await Task.findById('5e6e3a14288b7c271a45aea3');
   // await task.populate('owner').execPopulate();
