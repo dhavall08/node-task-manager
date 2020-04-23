@@ -85,7 +85,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, 'thisiskey');
+  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
   // use only id to generate token; 
   // if all user info is stored, then when we update username, token also contains the previous username
   user.tokens = user.tokens.concat({ token });
