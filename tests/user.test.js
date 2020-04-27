@@ -1,25 +1,10 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 const app = require('../src/app');
 const User = require('../src/models/user');
+const { userOneId, userOne, setupDatabase } = require('./fixtures/db')
 
-const userOneId = new mongoose.Types.ObjectId();
-const userOne = {
-  _id: userOneId,
-  name: "User4",
-  password: "Test_123",
-  email: "usertest5@mailinator.com",
-  tokens: [{
-    token: jwt.sign({ _id: userOneId }, process.env.JWT_SECRET)
-  }]
-}
-
-beforeEach(async () => {
-  // run before every test case
-  await User.deleteMany();
-  await new User(userOne).save();
-})
+beforeEach(setupDatabase);
+// run before every test case
 
 test('Should signup a new user', async () => {
   const response = await request(app).post('/users').send({
@@ -80,7 +65,7 @@ test('Should delete account for user', async () => {
     .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
     .send()
     .expect(200);
-  
+
   const user = await User.findById(userOneId);
   expect(user).toBeNull();
 });
@@ -91,3 +76,14 @@ test('Should not delete account for unauthenticated user', async () => {
     .send()
     .expect(401);
 });
+
+test('Should upload avatar image', async () => {
+  await request(app)
+    .post('/users/me/avatar')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .attach('avatar', 'tests/fixtures/philly.jpg')
+    .expect(200);
+
+  const user = await User.findById(userOneId);
+  expect(user.avatar).toEqual(expect.any(Buffer));
+})
